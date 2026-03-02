@@ -1,0 +1,30 @@
+# Build
+bin/
+obj/
+out/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
