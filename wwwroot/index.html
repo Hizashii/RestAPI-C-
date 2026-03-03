@@ -22,7 +22,8 @@
 </head>
 <body>
   <h1>Rubber Ducks API Client</h1>
-  <p>API base: <input type="text" id="baseUrl" value="http://localhost:5043" style="width: 300px;"></p>
+  <p>API base: <input type="text" id="baseUrl" value="" style="width: 300px;"></p>
+  <script>document.getElementById('baseUrl').value = window.location.origin;</script>
 
   <section>
     <h2>Authentication</h2>
