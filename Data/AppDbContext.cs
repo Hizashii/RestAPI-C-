@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using RESTApi.Models;
 
 namespace RESTApi.Data;

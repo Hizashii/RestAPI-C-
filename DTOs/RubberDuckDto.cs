@@ -1,10 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace RESTApi.DTOs;
 
-/// <summary>
-/// DTO for creating a new rubber duck.
-/// </summary>
+
 public class CreateRubberDuckDto
 {
     [Required]
@@ -25,9 +21,7 @@ public class CreateRubberDuckDto
     public string? Description { get; set; }
 }
 
-/// <summary>
-/// DTO for updating an existing rubber duck.
-/// </summary>
+
 public class UpdateRubberDuckDto
 {
     [StringLength(100)]
@@ -46,9 +40,7 @@ public class UpdateRubberDuckDto
     public string? Description { get; set; }
 }
 
-/// <summary>
-/// Response DTO for rubber duck data.
-/// </summary>
+
 public class RubberDuckResponseDto
 {
     public int Id { get; set; }

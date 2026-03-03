@@ -1,8 +1,5 @@
 namespace RESTApi.Models;
 
-/// <summary>
-/// User entity for authentication.
-/// </summary>
 public class User
 {
     public int Id { get; set; }

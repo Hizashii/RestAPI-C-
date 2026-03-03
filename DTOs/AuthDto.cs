@@ -1,10 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 
 namespace RESTApi.DTOs;
-
-/// <summary>
-/// DTO for user registration.
-/// </summary>
 public class RegisterDto
 {
     [Required]
@@ -20,9 +15,7 @@ public class RegisterDto
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// DTO for user login.
-/// </summary>
+
 public class LoginDto
 {
     [Required]
@@ -32,9 +25,7 @@ public class LoginDto
     public string Password { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// Response DTO containing JWT token and user info.
-/// </summary>
+
 public class AuthResponseDto
 {
     public string Token { get; set; } = string.Empty;
