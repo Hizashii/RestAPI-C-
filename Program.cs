@@ -8,8 +8,9 @@ using RESTApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (port != null)
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services
 builder.Services.AddControllers();

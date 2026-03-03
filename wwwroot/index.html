@@ -62,19 +62,61 @@
 
   <script>
     let token = localStorage.getItem('token') || '';
+    updateAuthUI();
+
+    function updateAuthUI() {
+      const el = document.getElementById('authStatus');
+      if (token) {
+        el.innerHTML = '<span class="success">Authenticated (token stored)</span>';
+      } else {
+        el.innerHTML = 'Not logged in';
+      }
+    }
+
+    function showResponse(status, body) {
+      const el = document.getElementById('response');
+      const prefix = status ? `[${status}] ` : '';
+      try {
+        el.textContent = prefix + JSON.stringify(JSON.parse(body), null, 2);
+      } catch {
+        el.textContent = prefix + body;
+      }
+    }
+
+    function extractError(data, fallback) {
+      if (!data) return fallback;
+      if (data.message) return data.message;
+      if (data.title) return data.title;
+      if (data.errors) {
+        const msgs = Object.entries(data.errors)
+          .map(([field, errs]) => `${field}: ${[].concat(errs).join(', ')}`)
+          .join('; ');
+        return msgs || fallback;
+      }
+      return fallback;
+    }
 
     async function api(path, options = {}) {
-      const url = document.getElementById('baseUrl').value + path;
+      const base = document.getElementById('baseUrl').value.replace(/\/+$/, '');
+      const url = base + path;
       const headers = { 'Content-Type': 'application/json', ...options.headers };
       if (token) headers['Authorization'] = 'Bearer ' + token;
-      const res = await fetch(url, { ...options, headers });
-      const text = await res.text();
-      document.getElementById('response').textContent = text;
-      try { return JSON.parse(text); } catch { return null; }
+
+      try {
+        const res = await fetch(url, { ...options, headers });
+        const text = await res.text();
+        showResponse(res.status, text);
+        let data = null;
+        try { data = JSON.parse(text); } catch {}
+        return { ok: res.ok, status: res.status, data };
+      } catch (err) {
+        showResponse('ERR', err.message);
+        return { ok: false, status: 0, data: null, error: err.message };
+      }
     }
 
     async function register() {
-      const data = await api('/api/auth/register', {
+      const { ok, data } = await api('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify({
           username: document.getElementById('username').value,
@@ -82,39 +124,47 @@
           password: document.getElementById('password').value
         })
       });
-      if (data?.token) {
+      const el = document.getElementById('authStatus');
+      if (ok && data?.token) {
         token = data.token;
         localStorage.setItem('token', token);
-        document.getElementById('authStatus').innerHTML = '<span class="success">Registered & logged in!</span>';
+        el.innerHTML = '<span class="success">Registered & logged in!</span>';
       } else {
-        document.getElementById('authStatus').innerHTML = '<span class="error">Registration failed</span>';
+        el.innerHTML = '<span class="error">' + extractError(data, 'Registration failed') + '</span>';
       }
     }
 
     async function login() {
-      const data = await api('/api/auth/login', {
+      const { ok, data } = await api('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           username: document.getElementById('username').value,
           password: document.getElementById('password').value
         })
       });
-      if (data?.token) {
+      const el = document.getElementById('authStatus');
+      if (ok && data?.token) {
         token = data.token;
         localStorage.setItem('token', token);
-        document.getElementById('authStatus').innerHTML = '<span class="success">Logged in!</span>';
+        el.innerHTML = '<span class="success">Logged in!</span>';
       } else {
-        document.getElementById('authStatus').innerHTML = '<span class="error">Login failed</span>';
+        el.innerHTML = '<span class="error">' + extractError(data, 'Login failed') + '</span>';
       }
     }
 
     async function getAll() {
-      const data = await api('/api/rubberducks');
-      if (Array.isArray(data)) {
-        const html = '<table><tr><th>ID</th><th>Name</th><th>Color</th><th>Size</th><th>Price</th><th>Actions</th></tr>' +
+      const { ok, data } = await api('/api/rubberducks');
+      const el = document.getElementById('ducksList');
+      if (ok && Array.isArray(data)) {
+        if (data.length === 0) {
+          el.innerHTML = '<p>No ducks yet. Create one!</p>';
+          return;
+        }
+        el.innerHTML = '<table><tr><th>ID</th><th>Name</th><th>Color</th><th>Size</th><th>Price</th><th>Actions</th></tr>' +
           data.map(d => `<tr><td>${d.id}</td><td>${d.name}</td><td>${d.color}</td><td>${d.size}</td><td>${d.price}</td>
-            <td><button onclick="edit(${d.id})">Edit</button><button class="danger" onclick="del(${d.id})">Delete</button></td></tr>`).join('') + '</table>';
-        document.getElementById('ducksList').innerHTML = html;
+            <td><button onclick="edit(${d.id})">Edit</button> <button class="danger" onclick="del(${d.id})">Delete</button></td></tr>`).join('') + '</table>';
+      } else {
+        el.innerHTML = '<p class="error">' + extractError(data, 'Failed to load ducks (are you logged in?)') + '</p>';
       }
     }
 
@@ -123,7 +173,7 @@
     }
 
     async function create() {
-      await api('/api/rubberducks', {
+      const { ok } = await api('/api/rubberducks', {
         method: 'POST',
         body: JSON.stringify({
           name: document.getElementById('newName').value,
@@ -133,14 +183,16 @@
           description: document.getElementById('newDesc').value || null
         })
       });
-      document.getElementById('createForm').style.display = 'none';
-      getAll();
+      if (ok) {
+        document.getElementById('createForm').style.display = 'none';
+        getAll();
+      }
     }
 
     async function del(id) {
       if (confirm('Delete this duck?')) {
-        await api('/api/rubberducks/' + id, { method: 'DELETE' });
-        getAll();
+        const { ok } = await api('/api/rubberducks/' + id, { method: 'DELETE' });
+        if (ok) getAll();
       }
     }
 

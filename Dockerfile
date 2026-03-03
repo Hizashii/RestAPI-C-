@@ -8,5 +8,6 @@ RUN dotnet publish -c Release -o /app
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app .
+ENV PORT=10000
 EXPOSE 10000
 ENTRYPOINT ["dotnet", "RESTApi.dll"]
